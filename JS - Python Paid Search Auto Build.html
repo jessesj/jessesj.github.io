@@ -1,0 +1,517 @@
+<html>
+<style type="text/css">
+    .fixed-form  { 
+        display: table;
+        margin-left: 15px;  
+    }
+    .fixed-form div { 
+        display: table-row;  
+    }
+    .fixed-form div label { 
+        display: table-cell;
+        padding-right: 15px;
+    }
+    .fixed-form div input { 
+        display: table-cell; 
+    }
+    /* .models-form div input  {
+        margin-right: 5px;
+    } */
+</style>
+<script>
+
+function removeModel() {
+    let form = document.querySelector('.models-form')
+    if (form.length === 1) {
+        return;
+    } else {
+        form[form.length - 1].parentNode.remove()
+    }
+}
+
+function addModel() {
+    let form = document.querySelector('.models-form')
+    if (form.length > 14) {
+        return;
+    } else {
+        let newModelInput = document.createElement('input', { type: 'text', name: 'model' });
+        let newUrlInput = document.createElement('input', { type: 'text', name: 'url' });
+        let newDiv = document.createElement('div');
+        newDiv.insertBefore(newUrlInput, newDiv.firstChild)
+        newDiv.insertBefore(newModelInput, newUrlInput)
+        form[form.length - 1].parentNode.after(newDiv);
+    }
+}
+
+function register() {
+  window.captureEvents(Event.SUBMIT);
+  window.onsubmit = process;
+  document.querySelector('button[name="add"]').onclick=addModel;
+  document.querySelector('button[name="remove"]').onclick=removeModel;
+  document.querySelector('button[name="make_csv"]').onclick=process;
+}
+
+function process(e) {
+    e.preventDefault();
+    // Dangerously assume everything was input correctly.
+    let formElements = document.querySelector(".fixed-form").elements;
+    let fixedInput = {};
+    for (let element of formElements) {
+        fixedInput[element.name] = element.value;
+    }
+    let models = document.querySelector(".models-form").elements;
+    let modelNames = [];
+    let modelUrls = [];
+    for (let i = 0; i < models.length; i++) {
+        if (i % 2 == 0) {
+            modelNames.push(models[i].value);
+        }
+        else {
+            modelUrls.push(models[i].value);
+        }
+    }
+    console.log(modelNames);
+    console.log(modelUrls);
+    console.log(fixedInput);
+    let allTheRows = make_oem_campaign_rows(fixedInput)
+    allTheRows = allTheRows.concat(make_tm_campaign_rows(fixedInput))
+    allTheRows = allTheRows.concat(make_general_campaign_rows(fixedInput))
+    allTheRows = allTheRows.concat(make_used_general_campaign_rows(fixedInput))
+    allTheRows = allTheRows.concat(make_servpar_campaign_rows(fixedInput))
+    for (let i = 0; i < modelNames.length; i++) {
+        allTheRows = allTheRows.concat(make_model_campaign_rows(fixedInput, modelNames[i], modelUrls[i])).concat(make_used_model_campaign_rows(fixedInput, modelNames[i]))
+    }
+    console.log(typeof(allTheRows));
+    downloadCSV({ data: allTheRows })
+}
+
+// convertArrayOfObjectsToCSV and downloadCSV pasted from https://halistechnology.com/2015/05/28/use-javascript-to-export-your-data-as-csv/
+
+function convertArrayOfObjectsToCSV(args) {  
+    var result, ctr, keys, columnDelimiter, lineDelimiter, data;
+
+    data = args.data || null;
+    if (data == null || !data.length) {
+        return null;
+    }
+
+    columnDelimiter = args.columnDelimiter || ',';
+    lineDelimiter = args.lineDelimiter || '\n';
+
+    keys = Object.keys(data[0]);
+
+    result = '';
+    result += keys.join(columnDelimiter);
+    result += lineDelimiter;
+
+    data.forEach(function(item) {
+        ctr = 0;
+        keys.forEach(function(key) {
+            if (ctr > 0) result += columnDelimiter;
+
+            result += item[key];
+            ctr++;
+        });
+        result += lineDelimiter;
+    });
+
+    return result;
+}
+
+function downloadCSV(args) {  
+    var data, filename, link;
+    var csv = convertArrayOfObjectsToCSV({
+        data: args.data
+    });
+    if (csv == null) return;
+
+    filename = args.filename || 'export.csv';
+
+    if (!csv.match(/^data:text\/csv/i)) {
+        csv = 'data:text/csv;charset=utf-8,' + csv;
+    }
+    data = encodeURI(csv);
+
+    link = document.createElement('a');
+    link.setAttribute('href', data);
+    link.setAttribute('download', filename);
+    link.click();
+}
+
+/* 
+    Converted Python script!
+*/
+
+let GENERAL = 'General'
+let SPECIAL = 'Special'
+let LOCATION = 'Location'
+let LEASE = 'Lease'
+let DEALER = 'Dealer'
+let DEALERSHIP = 'Dealership'
+let FINANCE = 'Finance'
+let PRICE = 'Price'
+let FORSALE = 'For-Sale'
+let CITY = 'City'
+let USED = 'Used'
+let PREOWNED = 'Preowned'
+let OEM = 'OEM'
+let SERVICE = 'Service'
+let REPAIR = 'Repair'
+let PARTS = 'Parts'
+
+// additional oem campaign
+
+function make_oem_campaign_rows(user_input) {
+    let rows = [];
+    oem_ad_groups_and_oem_keywords = [
+        [OEM, `${user_input.oem.toLowerCase()}`],
+        [OEM, `${user_input.oem.toLowerCase()}s`],
+    ]
+    for (let [oem_ad_group, oem_keyword] of oem_ad_groups_and_oem_keywords) {
+        rows.push({
+            'Campaign': `${user_input.dealer_abbreviation}_NB_OEM-Keyword-Only_EXACT`,
+            'Ad Group': `${oem_ad_group}`,
+            'Keyword': oem_keyword,
+            'Match Type': 'exact',
+            'Max CPC': user_input.max_cpc_tm_general,
+            'Final URL': user_input.website_address
+        })
+    }
+    return rows
+}
+
+// additional service + parts campaign
+
+function make_servpar_campaign_rows(user_input) {
+    let rows = [];
+    let servpar_ad_groups_and_servpar_keywords = [
+        [SERVICE, `${user_input.oem.toLowerCase()} service`],
+        [SERVICE, `${user_input.oem.toLowerCase()} service near me`],
+        [SERVICE, `${user_input.oem.toLowerCase()} service center`],
+        [SERVICE, `${user_input.oem.toLowerCase()} service repair`],
+        [SERVICE, `fast ${user_input.oem.toLowerCase()} service`],
+        [SERVICE, `${user_input.oem.toLowerCase()} service ${user_input.dealer_main_city.toLowerCase()}`],
+        [SERVICE, `${user_input.oem.toLowerCase()} service ${user_input.dealer_city_2.toLowerCase()}`],
+        [REPAIR, `${user_input.oem.toLowerCase()} repair`],
+        [REPAIR, `${user_input.oem.toLowerCase()} repair near me`],
+        [REPAIR, `fast ${user_input.oem.toLowerCase()} repair`],
+        [REPAIR, `${user_input.dealer_main_city.toLowerCase()} ${user_input.oem.toLowerCase()} repair`],
+        [REPAIR, `${user_input.dealer_city_2.toLowerCase()} ${user_input.oem.toLowerCase()} repair`],
+        [PARTS, `${user_input.oem.toLowerCase()} parts`],
+        [PARTS, `${user_input.oem.toLowerCase()} parts near me`],
+        [PARTS, `${user_input.oem.toLowerCase()} OEM parts`],
+        [PARTS, `new ${user_input.oem.toLowerCase()} parts`],
+        [PARTS, `${user_input.dealer_main_city.toLowerCase()} ${user_input.oem.toLowerCase()} parts`],
+        [PARTS, `${user_input.dealer_city_2.toLowerCase()} ${user_input.oem.toLowerCase()} parts`],
+        ['Oil-Change', `${user_input.oem.toLowerCase()} oil change`],
+        ['Oil-Change', `${user_input.oem.toLowerCase()} oil service`],
+        ['Oil-Change', `${user_input.oem.toLowerCase()} oil change ${user_input.dealer_main_city.toLowerCase()}`],
+        ['Oil-Change', `${user_input.oem.toLowerCase()} oil change ${user_input.dealer_city_2.toLowerCase()}`],
+        ['Brakes', `${user_input.oem.toLowerCase()} brake repair`],
+        ['Brakes', `${user_input.oem.toLowerCase()} brakes`],
+        ['Brakes', `${user_input.oem.toLowerCase()} brake service`],
+        ['Brakes', `${user_input.oem.toLowerCase()} brake repair ${user_input.dealer_main_city.toLowerCase()}`],
+        ['Brakes', `${user_input.oem.toLowerCase()} brake repair ${user_input.dealer_city_2.toLowerCase()}`],
+        [SPECIAL, `${user_input.oem.toLowerCase()} service specials`],
+        [SPECIAL, `${user_input.oem.toLowerCase()} service coupons`],
+        [SPECIAL, `${user_input.oem.toLowerCase()} service discount`],
+        [SPECIAL, `${user_input.oem.toLowerCase()} parts specials`],
+        [SPECIAL, `${user_input.oem.toLowerCase()} parts coupons`],
+        [SPECIAL, `${user_input.oem.toLowerCase()} parts discount`],
+    ]
+    for (let [servpar_ad_group, servpar_keyword] of servpar_ad_groups_and_servpar_keywords) {
+        rows.push({
+            'Campaign': `${user_input.dealer_abbreviation}_NB_Service-Parts_EXACT`,
+            'Ad Group': `${servpar_ad_group}`,
+            'Keyword': servpar_keyword,
+            'Match Type': 'exact',
+            'Max CPC': user_input.max_cpc_tm_general,
+            'Final URL': user_input.website_address
+        })
+    }
+    return rows
+}
+
+// 1 TM campaign
+
+function make_tm_campaign_rows(user_input) {
+    let rows = []
+    console.log(user_input.dealer);
+    let tm_ad_groups_and_tm_keywords = [
+        [GENERAL, `${user_input.dealer.toLowerCase()}`],
+        [GENERAL, `${user_input.dealer.toLowerCase()} ${user_input.oem.toLowerCase()}`],
+        [GENERAL, `${user_input.oem.toLowerCase()} ${user_input.dealer.toLowerCase()}`],
+        [GENERAL, `${user_input.website_address.toLowerCase()}`],
+        [GENERAL, `${user_input.website_name.toLowerCase()}`],
+        [CITY, `${user_input.dealer.toLowerCase()} ${user_input.dealer_main_city.toLowerCase()}`],
+        [CITY, `${user_input.dealer.toLowerCase()} ${user_input.dealer_city_2.toLowerCase()}`],
+        [CITY, `${user_input.dealer.toLowerCase()} ${user_input.oem.toLowerCase()} ${user_input.dealer_main_city.toLowerCase()}`],
+        [CITY, `${user_input.dealer.toLowerCase()} ${user_input.oem.toLowerCase()} ${user_input.dealer_city_2.toLowerCase()}`],
+        [DEALER, `${user_input.dealer.toLowerCase()} ${user_input.oem.toLowerCase()} dealer`],
+        [DEALERSHIP, `${user_input.dealer.toLowerCase()} ${user_input.oem.toLowerCase()} dealership`],
+    ]
+    for (let [tm_ad_group, tm_keyword] of tm_ad_groups_and_tm_keywords) {
+        rows.push({
+            'Campaign': `${user_input.dealer_abbreviation}_TM_Brand_EXACT`,
+            'Ad Group': `${tm_ad_group}`,
+            'Keyword': tm_keyword,
+            'Match Type': 'exact',
+            'Max CPC': user_input.max_cpc_tm_general,
+            'Final URL': user_input.website_address
+        })
+    }
+    return rows
+}
+
+// 2 General Campaign
+
+function make_general_campaign_rows(user_input) {
+    let rows = [];
+    gen_ad_groups_and_gen_keywords = [
+        [DEALERSHIP, `${user_input.oem.toLowerCase()} dealership`],
+        [DEALERSHIP, `${user_input.oem.toLowerCase()} dealership ${user_input.dealer_main_city.toLowerCase()}`],
+        [DEALERSHIP, `${user_input.oem.toLowerCase()} dealership ${user_input.dealer_city_2.toLowerCase()}`],
+        [DEALERSHIP, `${user_input.dealer_main_city.toLowerCase()} ${user_input.oem.toLowerCase()} dealership`],
+        [DEALERSHIP, `${user_input.dealer_city_2.toLowerCase()} ${user_input.oem.toLowerCase()} dealership`],
+        [DEALERSHIP, `${user_input.oem.toLowerCase()} dealership near me`],
+        [DEALER, `${user_input.oem.toLowerCase()} dealer`],
+        [DEALER, `${user_input.oem.toLowerCase()} dealer ${user_input.dealer_main_city.toLowerCase()}`],
+        [DEALER, `${user_input.oem.toLowerCase()} dealer ${user_input.dealer_city_2.toLowerCase()}`],
+        [DEALER, `${user_input.dealer_main_city.toLowerCase()} ${user_input.oem.toLowerCase()} dealer`],
+        [DEALER, `${user_input.dealer_city_2.toLowerCase()} ${user_input.oem.toLowerCase()} dealer`],
+        [DEALER, `${user_input.oem.toLowerCase()} dealer near me`],
+        [FINANCE, `${user_input.oem.toLowerCase()} finance`],
+        [FINANCE, `${user_input.oem.toLowerCase()} finance deals`],
+        [FINANCE, `finance a ${user_input.oem.toLowerCase()}`],
+        [LEASE, `${user_input.oem.toLowerCase()} lease`],
+        [LEASE, `${user_input.oem.toLowerCase()} lease deals`],
+        [LEASE, `lease a ${user_input.oem.toLowerCase()}`],
+        [PRICE, `${user_input.oem.toLowerCase()} payment`],
+        [PRICE, `${user_input.oem.toLowerCase()} price`],
+        [PRICE, `${user_input.oem.toLowerCase()} cost`],
+        [FORSALE, `${user_input.oem.toLowerCase()} for sale`],
+        [FORSALE, `${user_input.oem.toLowerCase()} for sale near me`],
+        [FORSALE, `${user_input.oem.toLowerCase()} near me`],
+        [SPECIAL, `${user_input.oem.toLowerCase()} special`],
+        [SPECIAL, `${user_input.oem.toLowerCase()} deal`],
+        [SPECIAL, `${user_input.oem.toLowerCase()} offer`],
+        [SPECIAL, `${user_input.oem.toLowerCase()} discount`],
+        [SPECIAL, `${user_input.oem.toLowerCase()} sale`],
+        [SPECIAL, `${user_input.oem.toLowerCase()} incentive`],
+    ]
+    for (let [gen_ad_group, gen_keyword] of gen_ad_groups_and_gen_keywords) {
+        rows.push({
+            'Campaign': `${user_input.dealer_abbreviation}_NB_General_EXACT`,
+            'Ad Group': `${gen_ad_group}`,
+            'Keyword': gen_keyword,
+            'Match Type': 'exact',
+            'Max CPC': user_input.max_cpc_tm_general,
+            'Final URL': user_input.website_address
+        })
+    }
+    return rows
+}
+
+// 3 Used General Campaign
+
+function make_used_general_campaign_rows(user_input) {
+    rows = []
+    used_gen_ad_groups_and_used_gen_keywords = [
+        ['Used-General', `used ${user_input.oem.toLowerCase()}`],
+        ['Used-General', `used ${user_input.oem.toLowerCase()}s`],
+        ['Used-General', `used ${user_input.oem.toLowerCase()} near me`],
+        ['Used-General', `${user_input.oem.toLowerCase()} used`],
+        ['Used-General', `${user_input.oem.toLowerCase()} used near me`],
+        ['Used-For-Sale', `used ${user_input.oem.toLowerCase()} for sale`],
+        ['Used-For-Sale', `used ${user_input.oem.toLowerCase()} for sale near me`],
+        ['Used-For-Sale', `${user_input.oem.toLowerCase()} used for sale`],
+        ['Used-Dealer', `used ${user_input.oem.toLowerCase()} dealer`],
+        ['Used-Dealership', `used ${user_input.oem.toLowerCase()} dealership`],
+        ['Used-Special', `used ${user_input.oem.toLowerCase()} specials`],
+        ['Used-Special', `used ${user_input.oem.toLowerCase()} deals`],
+        ['Used-Special', `used ${user_input.oem.toLowerCase()} incentives`],
+        ['Used-Special', `used ${user_input.oem.toLowerCase()} offers`],
+        ['Preowned-General', `preowned ${user_input.oem.toLowerCase()}`],
+        ['Preowned-General', `preowned ${user_input.oem.toLowerCase()}s`],
+        ['Preowned-General', `preowned ${user_input.oem.toLowerCase()} near me`],
+        ['Preowned-General', `${user_input.oem.toLowerCase()} preowned`],
+        ['Preowned-General', `${user_input.oem.toLowerCase()} preowned near me`],
+        ['Preowned-For-Sale', `preowned ${user_input.oem.toLowerCase()} for sale`],
+        ['Preowned-For-Sale', `preowned ${user_input.oem.toLowerCase()} for sale near me`],
+        ['Preowned-For-Sale', `${user_input.oem.toLowerCase()} preowned for sale`],
+        ['Preowned-Dealer', `preowned ${user_input.oem.toLowerCase()} dealer`],
+        ['Preowned-Dealer', `preowned ${user_input.oem.toLowerCase()} dealership`],
+        ['Preowned-Special', `preowned ${user_input.oem.toLowerCase()} specials`],
+        ['Preowned-Special', `preowned ${user_input.oem.toLowerCase()} deals`],
+        ['Preowned-Special', `preowned ${user_input.oem.toLowerCase()} incentives`],
+        ['Preowned-Special', `preowned ${user_input.oem.toLowerCase()} offers`],
+        ['Certified-Preowned-General', `certified preowned ${user_input.oem.toLowerCase()}`],
+        ['Certified-Preowned-General', `certified preowned ${user_input.oem.toLowerCase()}s`],
+        ['Certified-Preowned-General', `certified preowned ${user_input.oem.toLowerCase()} near me`],
+        ['Certified-Preowned-General', `${user_input.oem.toLowerCase()} certified preowned`],
+        ['Certified-Preowned-General', `${user_input.oem.toLowerCase()} certified preowned near me`],
+        ['Certified-Preowned-For-Sale', `certified preowned ${user_input.oem.toLowerCase()} for sale`],
+        ['Certified-Preowned-For-Sale', `certified preowned ${user_input.oem.toLowerCase()} for sale near me`],
+        ['Certified-Preowned-For-Sale', `${user_input.oem.toLowerCase()} certified preowned for sale`],
+        ['Certified-Preowned-Dealer', `certified preowned ${user_input.oem.toLowerCase()} dealer`],
+        ['Certified-Preowned-Dealer', `certified preowned ${user_input.oem.toLowerCase()} dealership`],
+        ['Certified-Preowned-Special', `certified preowned ${user_input.oem.toLowerCase()} specials`],
+        ['Certified-Preowned-Special', `certified preowned ${user_input.oem.toLowerCase()} deals`],
+        ['Certified-Preowned-Special', `certified preowned ${user_input.oem.toLowerCase()} incentives`],
+        ['Certified-Preowned-Special', `certified preowned ${user_input.oem.toLowerCase()} offers`],
+    ]
+    for (let [used_gen_ad_group, used_gen_keyword] of used_gen_ad_groups_and_used_gen_keywords) {
+        rows.push({
+            'Campaign': `${user_input.dealer_abbreviation}_NB_General-Used_EXACT`,
+            'Ad Group': `${used_gen_ad_group}`,
+            'Keyword': used_gen_keyword,
+            'Match Type': 'exact',
+            'Max CPC': user_input.max_cpc_tm_general,
+            'Final URL': user_input.website_used_inventory_url
+        })
+    }   
+    return rows
+}
+
+// 4 Model Campaigns (Can Be Iterated)
+
+function make_model_campaign_rows(user_input, model, url) {
+    rows = []
+    car_names = [`${user_input.oem} ${model}`, model]
+    for (let car_name of car_names) {
+        model_ad_groups_and_model_keywords = [
+            [GENERAL, `${car_name.toLowerCase()}`],
+            [GENERAL, `${car_name.toLowerCase()} for sale`],
+            [GENERAL, `${car_name.toLowerCase()} for sale near me`],
+            [GENERAL, `${car_name.toLowerCase()} near me`],
+            [GENERAL, `new ${car_name.toLowerCase()}`],
+            [(new Date()).getFullYear(), `${(new Date()).getFullYear()} ${car_name.toLowerCase()}`],
+            [(new Date()).getFullYear(), `${(new Date()).getFullYear()} ${car_name.toLowerCase()} for sale`],
+            [(new Date()).getFullYear(), `${(new Date()).getFullYear()} ${car_name.toLowerCase()} near me`],
+            [(new Date()).getFullYear() + 1, `${(new Date()).getFullYear()+1} ${car_name.toLowerCase()}`],
+            [(new Date()).getFullYear() + 1, `${(new Date()).getFullYear()+1} ${car_name.toLowerCase()} for sale`],
+            [(new Date()).getFullYear() + 1, `${(new Date()).getFullYear()+1} ${car_name.toLowerCase()} near me`],
+            [SPECIAL, `${car_name.toLowerCase()} deal`],
+            [SPECIAL, `${car_name.toLowerCase()} discount`],
+            [SPECIAL, `${car_name.toLowerCase()} special`],
+            [SPECIAL, `${car_name.toLowerCase()} incentive`],
+            [LEASE, `${car_name.toLowerCase()} lease`],
+            [LEASE, `lease a ${car_name.toLowerCase()}`],
+            [LEASE, `${car_name.toLowerCase()} leasing`],
+            [LOCATION, `${car_name.toLowerCase()} ${user_input.dealer_city_2.toLowerCase()}`],
+            [LOCATION, `${car_name.toLowerCase()} ${user_input.dealer_main_city.toLowerCase()}`],
+            [PRICE, `how much is a ${car_name.toLowerCase()}`],
+            [PRICE, `${car_name.toLowerCase()} price`],
+            [PRICE, `${car_name.toLowerCase()} payment`],
+            [PRICE, `${car_name.toLowerCase()} msrp`],
+            [FINANCE, `${car_name.toLowerCase()} finance`],
+            [FINANCE, `finance a ${car_name.toLowerCase()}`],
+        ]
+        for (let [model_ad_group, model_keyword] of model_ad_groups_and_model_keywords) {
+            rows.push({
+                'Campaign': `${user_input.dealer_abbreviation}_NB_Model-${model}_EXACT`,
+                'Ad Group': `${model}-${model_ad_group}`,
+                'Keyword': model_keyword,
+                'Match Type': 'exact',
+                'Max CPC': user_input.max_cpc_model,
+                'Final URL': url
+            })
+        }
+    return rows
+    }
+}
+
+// 5 Used Model Campaigns (Can Be Iterated)
+
+function make_used_model_campaign_rows(user_input, model) {
+    rows = []
+    used_car_names = [`${user_input.oem} ${model}`, model]
+    for (let used_car_name of used_car_names) {
+        used_model_ad_groups_and_used_model_keywords = [
+            [USED, `used ${used_car_name.toLowerCase()}`],
+            [USED, `${used_car_name.toLowerCase()} used`],
+            [USED, `preowned ${used_car_name.toLowerCase()}`],
+            [USED, `${used_car_name.toLowerCase()} preowned`],
+            [USED, `certified preowned ${used_car_name.toLowerCase()}`],
+            [USED, `${used_car_name.toLowerCase()} certified preowned`],
+        ]
+        for (let [used_model_ad_group, used_model_keyword] of used_model_ad_groups_and_used_model_keywords) {
+            rows.push({
+                'Campaign': `${user_input.dealer_abbreviation}_NB_Model-${model}-Used_EXACT`,
+                'Ad Group': `${used_model_ad_group}-${model}`,
+                'Keyword': used_model_keyword,
+                'Match Type': 'exact',
+                'Max CPC': user_input.max_cpc_model,
+                'Final URL': user_input.website_used_inventory_url
+            })
+        }
+    }
+    return rows
+}
+
+
+</script>
+
+<body onload="register();">
+<form class="fixed-form">
+    <div>
+        <label for="dealer">Dealer Name:</label>
+        <input type="text" name="dealer" />
+    </div>
+    <div>
+        <label for="oem">OEM:</label>
+        <input type="text" name="oem" />
+    </div>
+    <div>
+        <label for="dealer_abbreviation">Dealer Abbreviation:</label>
+        <input type="text" name="dealer_abbreviation" />
+    </div>
+    <div>
+        <label for="dealer_main_city">Dealer Main City:</label>
+        <input type="text" name="dealer_main_city" />
+    </div>
+    <div>
+        <label for="dealer_city_2">Dealer City 2:</label>
+        <input type="text" name="dealer_city_2" />
+    </div>
+    <div>
+        <label for="url">Website Name:</label>
+        <input type="text" name="website_name" />
+    </div>
+    <div>
+        <label for="url">Website Address:</label>
+        <input type="text" name="website_address" />
+    </div>
+    <div>
+        <label for="url">Used Model Address:</label>
+        <input type="text" name="website_used_inventory_url" />
+    </div>
+    <div>
+        <label for="url">Max CPC (general):</label>
+        <input type="text" name="max_cpc_tm_general" />
+    </div>
+    <div>
+        <label for="url">Max CPC (model):</label>
+        <input type="text" name="max_cpc_model" />
+    </div>
+    <br />
+</form>
+
+<p>Models</p>
+
+<form class="models-form">
+    <div>
+        <input placeholder="Name of model"/>
+        <input placeholder="Model URL"/>
+    </div>
+</form>
+
+<button name="add">Add another model</button>
+<button name="remove">Remove last model</button>
+
+<br/>
+
+<button name="make_csv">Make CSV</button>
+
+</body>
+</html>
