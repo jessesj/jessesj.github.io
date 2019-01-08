@@ -21,9 +21,8 @@
 <script>
 
 function removeModel() {
-    //boo
     let form = document.querySelector('.models-form')
-    if (form.length === 1) {
+    if (form.length === 2) {
         return;
     } else {
         form[form.length - 1].parentNode.remove()
@@ -32,7 +31,7 @@ function removeModel() {
 
 function addModel() {
     let form = document.querySelector('.models-form')
-    if (form.length > 14) {
+    if (form.length > 30) {
         return;
     } else {
         let newModelInput = document.createElement('input', { type: 'text', name: 'model' });
