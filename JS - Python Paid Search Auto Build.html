@@ -1,18 +1,18 @@
 <html>
 <style type="text/css">
-    .fixed-form  { 
+    .fixed-form  {
         display: table;
-        margin-left: 15px;  
+        margin-left: 15px;
     }
-    .fixed-form div { 
-        display: table-row;  
+    .fixed-form div {
+        display: table-row;
     }
-    .fixed-form div label { 
+    .fixed-form div label {
         display: table-cell;
         padding-right: 15px;
     }
-    .fixed-form div input { 
-        display: table-cell; 
+    .fixed-form div input {
+        display: table-cell;
     }
     /* .models-form div input  {
         margin-right: 5px;
@@ -21,6 +21,7 @@
 <script>
 
 function removeModel() {
+    //boo
     let form = document.querySelector('.models-form')
     if (form.length === 1) {
         return;
@@ -87,7 +88,7 @@ function process(e) {
 
 // convertArrayOfObjectsToCSV and downloadCSV pasted from https://halistechnology.com/2015/05/28/use-javascript-to-export-your-data-as-csv/
 
-function convertArrayOfObjectsToCSV(args) {  
+function convertArrayOfObjectsToCSV(args) {
     var result, ctr, keys, columnDelimiter, lineDelimiter, data;
 
     data = args.data || null;
@@ -118,7 +119,7 @@ function convertArrayOfObjectsToCSV(args) {
     return result;
 }
 
-function downloadCSV(args) {  
+function downloadCSV(args) {
     var data, filename, link;
     var csv = convertArrayOfObjectsToCSV({
         data: args.data
@@ -138,7 +139,7 @@ function downloadCSV(args) {
     link.click();
 }
 
-/* 
+/*
     Converted Python script!
 */
 
@@ -369,7 +370,7 @@ function make_used_general_campaign_rows(user_input) {
             'Max CPC': user_input.max_cpc_tm_general,
             'Final URL': user_input.website_used_inventory_url
         })
-    }   
+    }
     return rows
 }
 
