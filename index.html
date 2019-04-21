@@ -437,7 +437,7 @@ function make_used_model_campaign_rows(user_input, model) {
         ]
         for (let [used_model_ad_group, used_model_keyword] of used_model_ad_groups_and_used_model_keywords) {
             rows.push({
-                'Campaign': `${user_input.dealer_abbreviation}_NB_Model-${model}-Used_EXACT`,
+                'Campaign': `${user_input.dealer_abbreviation}_NB_Model-Used_EXACT`,
                 'Ad Group': `${used_model_ad_group}-${model}`,
                 'Keyword': used_model_keyword,
                 'Match Type': 'exact',
@@ -473,6 +473,18 @@ function make_used_model_campaign_rows(user_input, model) {
     <div>
         <label for="dealer_city_2">Dealer City 2:</label>
         <input type="text" name="dealer_city_2" />
+    </div>
+    <div>
+        <label for="dealer_city_3">Dealer City 3:</label>
+        <input type="text" name="dealer_city_3" />
+    </div>
+    <div>
+        <label for="dealer_city_4">Dealer City 4:</label>
+        <input type="text" name="dealer_city_4" />
+    </div>
+    <div>
+        <label for="dealer_city_5">Dealer City 5:</label>
+        <input type="text" name="dealer_city_5" />
     </div>
     <div>
         <label for="url">Website Name:</label>
