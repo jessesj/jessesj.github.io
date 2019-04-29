@@ -269,18 +269,17 @@ function make_general_campaign_rows(user_input) {
     let rows = [];
     gen_ad_groups_and_gen_keywords = [
         [DEALERSHIP, `${user_input.oem.toLowerCase()} dealership`],
-        [DEALERSHIP, `${user_input.oem.toLowerCase()} dealership ${user_input.dealer_main_city.toLowerCase()}`],
-        [DEALERSHIP, `${user_input.oem.toLowerCase()} dealership ${user_input.dealer_city_2.toLowerCase()}`],
-        [DEALERSHIP, `${user_input.dealer_main_city.toLowerCase()} ${user_input.oem.toLowerCase()} dealership`],
-        [DEALERSHIP, `${user_input.dealer_city_2.toLowerCase()} ${user_input.oem.toLowerCase()} dealership`],
         [DEALERSHIP, `${user_input.oem.toLowerCase()} dealership near me`],
-        [DEALER, `${user_input.oem.toLowerCase()} dealer`],
-        [DEALER, `${user_input.oem.toLowerCase()} dealer ${user_input.dealer_main_city.toLowerCase()}`],
-        [DEALER, `${user_input.oem.toLowerCase()} dealer ${user_input.dealer_city_2.toLowerCase()}`],
-        [DEALER, `${user_input.dealer_main_city.toLowerCase()} ${user_input.oem.toLowerCase()} dealer`],
-        [DEALER, `${user_input.dealer_city_2.toLowerCase()} ${user_input.oem.toLowerCase()} dealer`],
-        [DEALER, `${user_input.oem.toLowerCase()} dealer near me`],
-        [FINANCE, `${user_input.oem.toLowerCase()} finance`],
+        [DEALERSHIP, `${user_input.oem.toLowerCase()} dealer`],
+        [DEALERSHIP, `${user_input.oem.toLowerCase()} dealer near me`],
+        [LOCATION, `${user_input.oem.toLowerCase()} ${user_input.dealer_main_city.toLowerCase()}`],
+        [LOCATION, `${user_input.oem.toLowerCase()} ${user_input.dealer_city_2.toLowerCase()}`],
+        [LOCATION, `${user_input.oem.toLowerCase()} ${user_input.dealer_city_3.toLowerCase()}`],
+        [LOCATION, `${user_input.oem.toLowerCase()} ${user_input.dealer_city_4.toLowerCase()}`],
+        [LOCATION, `${user_input.oem.toLowerCase()} ${user_input.dealer_city_5.toLowerCase()}`],
+        [LOCATION, `${user_input.oem.toLowerCase()} ${user_input.dealer_city_6.toLowerCase()}`],
+        [LOCATION, `${user_input.oem.toLowerCase()} ${user_input.state.toLowerCase()}`],
+        [FINANCE, `${user_input.oem.toLowerCase()} financing`],
         [FINANCE, `${user_input.oem.toLowerCase()} finance deals`],
         [FINANCE, `finance a ${user_input.oem.toLowerCase()}`],
         [LEASE, `${user_input.oem.toLowerCase()} lease`],
@@ -421,7 +420,7 @@ function make_model_campaign_rows(user_input, model, url) {
     }
 }
 
-// 5 Used Model Campaigns (Can Be Iterated)
+// 5 Used Model Campaign (One Campaign For All Models - Ad Groups Will Be Iterated)
 
 function make_used_model_campaign_rows(user_input, model) {
     rows = []
@@ -465,6 +464,10 @@ function make_used_model_campaign_rows(user_input, model) {
     <div>
         <label for="dealer_abbreviation">Dealer Abbreviation:</label>
         <input type="text" name="dealer_abbreviation" />
+    </div>
+    <div>
+        <label for="state">State:</label>
+        <input type="text" name="state" />
     </div>
     <div>
         <label for="dealer_main_city">Dealer Main City:</label>
