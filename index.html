@@ -130,7 +130,7 @@ function downloadCSV(args) {
     if (!csv.match(/^data:text\/csv/i)) {
         csv = 'data:text/csv;charset=utf-8,' + csv;
     }
-    data = encodeURI(csv);
+    data.encodeURI(csv).replace(/#/g, '%23');
 
     link = document.createElement('a');
     link.setAttribute('href', data);
@@ -169,7 +169,7 @@ function make_oem_campaign_rows(user_input) {
     ]
     for (let [oem_ad_group, oem_keyword] of oem_ad_groups_and_oem_keywords) {
         rows.push({
-            'Campaign': `${user_input.dealer_abbreviation}_NB_OEM-Keyword-Only_EXACT`,
+            'Campaign': `${user_input.dealer_abbreviation}_OEM-Keyword-Only_EXACT`,
             'Ad Group': `${oem_ad_group}`,
             'Keyword': oem_keyword,
             'Match Type': 'exact',
@@ -221,7 +221,7 @@ function make_servpar_campaign_rows(user_input) {
     ]
     for (let [servpar_ad_group, servpar_keyword] of servpar_ad_groups_and_servpar_keywords) {
         rows.push({
-            'Campaign': `${user_input.dealer_abbreviation}_NB_Service-Parts_EXACT`,
+            'Campaign': `${user_input.dealer_abbreviation}_Service-Parts_EXACT`,
             'Ad Group': `${servpar_ad_group}`,
             'Keyword': servpar_keyword,
             'Match Type': 'exact',
@@ -255,7 +255,7 @@ function make_tm_campaign_rows(user_input) {
     ]
     for (let [tm_ad_group, tm_keyword] of tm_ad_groups_and_tm_keywords) {
         rows.push({
-            'Campaign': `${user_input.dealer_abbreviation}_TM_Brand_EXACT`,
+            'Campaign': `${user_input.dealer_abbreviation}_Brand_EXACT`,
             'Ad Group': `${tm_ad_group}`,
             'Keyword': tm_keyword,
             'Match Type': 'exact',
@@ -303,7 +303,7 @@ function make_general_campaign_rows(user_input) {
     ]
     for (let [gen_ad_group, gen_keyword] of gen_ad_groups_and_gen_keywords) {
         rows.push({
-            'Campaign': `${user_input.dealer_abbreviation}_NB_General_EXACT`,
+            'Campaign': `${user_input.dealer_abbreviation}_General_EXACT`,
             'Ad Group': `${gen_ad_group}`,
             'Keyword': gen_keyword,
             'Match Type': 'exact',
@@ -364,7 +364,7 @@ function make_used_general_campaign_rows(user_input) {
     ]
     for (let [used_gen_ad_group, used_gen_keyword] of used_gen_ad_groups_and_used_gen_keywords) {
         rows.push({
-            'Campaign': `${user_input.dealer_abbreviation}_NB_General-Used_EXACT`,
+            'Campaign': `${user_input.dealer_abbreviation}_General-Used_EXACT`,
             'Ad Group': `${used_gen_ad_group}`,
             'Keyword': used_gen_keyword,
             'Match Type': 'exact',
@@ -411,7 +411,7 @@ function make_model_campaign_rows(user_input, model, url) {
         ]
         for (let [model_ad_group, model_keyword] of model_ad_groups_and_model_keywords) {
             rows.push({
-                'Campaign': `${user_input.dealer_abbreviation}_NB_Model-${model}_EXACT`,
+                'Campaign': `${user_input.dealer_abbreviation}_Model-${model}_EXACT`,
                 'Ad Group': `${model}-${model_ad_group}`,
                 'Keyword': model_keyword,
                 'Match Type': 'exact',
@@ -419,8 +419,8 @@ function make_model_campaign_rows(user_input, model, url) {
                 'Final URL': url
             })
         }
-    return rows
     }
+    return rows
 }
 
 // 5 Used Model Campaign (One Campaign For All Models - Ad Groups Will Be Iterated)
@@ -439,7 +439,7 @@ function make_used_model_campaign_rows(user_input, model) {
         ]
         for (let [used_model_ad_group, used_model_keyword] of used_model_ad_groups_and_used_model_keywords) {
             rows.push({
-                'Campaign': `${user_input.dealer_abbreviation}_NB_Model-Used_EXACT`,
+                'Campaign': `${user_input.dealer_abbreviation}_Model-Used_EXACT`,
                 'Ad Group': `${used_model_ad_group}-${model}`,
                 'Keyword': used_model_keyword,
                 'Match Type': 'exact',
